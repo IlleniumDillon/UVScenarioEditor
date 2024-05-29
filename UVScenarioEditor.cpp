@@ -56,6 +56,7 @@ UVScenarioEditor::UVScenarioEditor(QWidget *parent)
 	m_scenarioEditor = new ScenarioEditor(this);
 	m_primitiveEditor = new PrimitiveEditor(this);
 
+	timerId = startTimer(10);
 }
 
 UVScenarioEditor::~UVScenarioEditor()
@@ -74,14 +75,41 @@ void UVScenarioEditor::on_actionNew_triggered()
 	{
 		qDebug() << "Failed to open file: " << scenarioFilePath;
 		QMessageBox::critical(this, "Error", "Failed to open file: " + scenarioFilePath);
+		return;
 	}
 	else
 	{
 		qDebug() << "File opened: " << scenarioFilePath;
-		file.close();
 	}
 
-	m_scenarioEditor->setFilePath(scenarioFilePath);
+	/// dialog to get the scenario size, resolution, etc.
+	QStringList labels = {"Width(m)","Height(m)","Resolution(m)"};
+	MultipleInputDialog dialog(labels, this);
+
+	QStringList values = dialog.getValues();
+	if (!values.isEmpty())
+	{
+		qDebug() << "Values: " << values;
+
+		QJsonObject scenario;
+		scenario["width"] = values[0].toDouble();
+		scenario["height"] = values[1].toDouble();
+		scenario["resolution"] = values[2].toDouble();
+
+		QJsonDocument doc(scenario);
+		file.write(doc.toJson());
+		file.close();
+
+		qDebug() << "Scenario file created: " << scenarioFilePath;
+
+		m_scenarioEditor->setFilePath(scenarioFilePath);
+	}
+	else
+	{
+		qDebug() << "Dialog cancelled";
+		file.close();
+		return;
+	}
 }
 
 void UVScenarioEditor::on_actionOpen_triggered()
@@ -94,6 +122,7 @@ void UVScenarioEditor::on_actionOpen_triggered()
 	{
 		qDebug() << "Failed to open file: " << scenarioFilePath;
 		QMessageBox::critical(this, "Error", "Failed to open file: " + scenarioFilePath);
+		return;
 	}
 	else
 	{
@@ -120,6 +149,7 @@ void UVScenarioEditor::on_actionSaveAs_triggered()
 	{
 		qDebug() << "Failed to open file: " << scenarioFilePath;
 		QMessageBox::critical(this, "Error", "Failed to open file: " + scenarioFilePath);
+		return;
 	}
 	else
 	{
@@ -133,9 +163,29 @@ void UVScenarioEditor::on_actionSaveAs_triggered()
 void UVScenarioEditor::on_actionPlace_triggered()
 {
 	qDebug() << "Place action triggered";
+	m_primitiveEditor->show();
 }
 
 void UVScenarioEditor::on_actionPrimitives_triggered()
 {
 	qDebug() << "Primitives action triggered";
+}
+
+void UVScenarioEditor::timerEvent(QTimerEvent* event)
+{
+	if (event->timerId() == timerId)
+	{
+		m_scenarioEditor->update();
+		QPixmap showPix;
+		m_scenarioEditor->getPixMap(showPix);
+		if (!showPix.isNull())
+		{
+			showPix = showPix.scaled(ui.labelView->size(), Qt::KeepAspectRatio);
+			ui.labelView->setPixmap(showPix);
+		}
+	}
+	else
+	{
+		QWidget::timerEvent(event);
+	}
 }

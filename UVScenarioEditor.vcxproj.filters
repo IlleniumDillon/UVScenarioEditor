@@ -43,12 +43,18 @@
     <ClCompile Include="ScenarioEditor\ScenarioEditor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Common\MultipleInputDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="PrimitiveEditor\PrimitiveEditor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="ScenarioEditor\ScenarioEditor.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Common\MultipleInputDialog.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="PrimitiveEditor\PrimitiveEditor.h">
@@ -59,5 +65,13 @@
     <ClInclude Include="Settings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Common\Type.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <QtUic Include="PrimitiveEditor\PrimitiveEditor.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
   </ItemGroup>
 </Project>

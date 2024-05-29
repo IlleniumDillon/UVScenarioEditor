@@ -11,6 +11,12 @@
 #include <QJsonValue>
 #include <QJsonParseError>
 
+#include <QImage>
+#include <QPixmap>
+#include <QPainter>
+
+#include "Common/Type.h"
+
 class ScenarioEditor  : public QObject
 {
 	Q_OBJECT
@@ -30,8 +36,15 @@ public:
 
 	void update();
 
+	void getPixMap(QPixmap& pix);
+
 private:
 	QString m_filePath;
+	Scenario m_scenario;
+
+	QImage background;
+	QImage sceneImg;
+	QPixmap pixmap;
 
 	bool changed = false;
 };

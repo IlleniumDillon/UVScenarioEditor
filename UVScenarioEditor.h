@@ -9,10 +9,12 @@
 #include <QMessageBox>
 #include <QDir>
 #include <QFile>
+#include <QTimerEvent>
 
 #include <Settings.h>
 #include "ScenarioEditor/ScenarioEditor.h"
 #include "PrimitiveEditor/PrimitiveEditor.h"
+#include "Common/MultipleInputDialog.h"
 
 class UVScenarioEditor : public QMainWindow
 {
@@ -29,6 +31,7 @@ public slots:
 	void on_actionSaveAs_triggered();
 	void on_actionPlace_triggered();
 	void on_actionPrimitives_triggered();
+	void timerEvent(QTimerEvent* event);
 private:
     Ui::UVScenarioEditorClass ui;
 	ScenarioEditor* m_scenarioEditor = nullptr;
@@ -37,4 +40,6 @@ private:
 	QString appDir;
 	QString scenarioDir;
 	QString primitiveDir;
+
+	int timerId;
 };
