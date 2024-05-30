@@ -35,16 +35,30 @@ public:
 	void saveFile(QString path);
 
 	void update();
+	void forceUpdate();
 
 	void getPixMap(QPixmap& pix);
 
-private:
+	void selectPrimitive(int index);
+	void selectPrimitive(QPointF position);
+
+	void moveCurrentPrimitive(QPointF position);
+	void rotateCurrentPrimitive(qreal angle);
+
+public slots:
+
+	void onAddPrimitive(Primitive primitive);
+
+public:
 	QString m_filePath;
 	Scenario m_scenario;
 
 	QImage background;
 	QImage sceneImg;
 	QPixmap pixmap;
+	// double scale = 1.0;
+
+	int currentPrimitiveIndex = -1;
 
 	bool changed = false;
 };

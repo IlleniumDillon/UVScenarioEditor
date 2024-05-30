@@ -49,6 +49,9 @@
     <ClCompile Include="PrimitiveEditor\PrimitiveEditor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ScenarioEditor\MultipleSpinBoxDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="ScenarioEditor\ScenarioEditor.h">
@@ -58,6 +61,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="PrimitiveEditor\PrimitiveEditor.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="ScenarioEditor\MultipleSpinBoxDialog.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

@@ -10,6 +10,9 @@
 #include <QDir>
 #include <QFile>
 #include <QTimerEvent>
+#include <QMouseEvent>
+#include <QWheelEvent>
+#include <QKeyEvent>
 
 #include <Settings.h>
 #include "ScenarioEditor/ScenarioEditor.h"
@@ -32,6 +35,13 @@ public slots:
 	void on_actionPlace_triggered();
 	void on_actionPrimitives_triggered();
 	void timerEvent(QTimerEvent* event);
+	void mousePressEvent(QMouseEvent* event);
+	void mouseReleaseEvent(QMouseEvent* event);
+	void mouseMoveEvent(QMouseEvent* event);
+	void wheelEvent(QWheelEvent* event);
+	void mouseDoubleClickEvent(QMouseEvent* event);
+	void keyPressEvent(QKeyEvent* event);
+
 private:
     Ui::UVScenarioEditorClass ui;
 	ScenarioEditor* m_scenarioEditor = nullptr;
@@ -40,6 +50,9 @@ private:
 	QString appDir;
 	QString scenarioDir;
 	QString primitiveDir;
+
+	double scale = 1.0;
+	QLabel* labelMousePos;
 
 	int timerId;
 };

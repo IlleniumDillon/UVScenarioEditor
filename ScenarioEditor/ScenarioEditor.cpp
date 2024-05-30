@@ -99,6 +99,7 @@ void ScenarioEditor::parseFile()
 				primitive.anchor.push_back(QPointF(anchorPointArray[0].toDouble(), anchorPointArray[1].toDouble()));
 			}
 		}
+		m_scenario.addPrimitive(primitive);
 	}
 
 	/// generate background image
@@ -181,38 +182,147 @@ void ScenarioEditor::update()
 
 	sceneImg = QImage(m_scenario.width / m_scenario.resolution, m_scenario.height / m_scenario.resolution, QImage::Format_RGB888);
 	sceneImg.fill(Qt::white);
+	QPoint origin(sceneImg.width() / 2, sceneImg.height() / 2);
+	QPainter painter(&sceneImg);
 
 	for (int i = 0; i < m_scenario.primitives.size(); i++)
 	{
 		m_scenario.primitives[i].updateGeometry();
+		painter.setPen(QPen(Qt::black, 1));
+		painter.setBrush(Qt::black);
+
 		if (m_scenario.primitives[i].type == "Polygon")
 		{
+			if (i == currentPrimitiveIndex)
+			{
+				painter.setPen(QPen(Qt::gray, 1));
+				painter.setBrush(Qt::gray);
+			}
 			QPolygon polygon;
 			for (int j = 0; j < m_scenario.primitives[i].verticesTransformed.size(); j++)
 			{
-				QPoint point(m_scenario.primitives[i].verticesTransformed[j].x() / m_scenario.resolution, m_scenario.primitives[i].verticesTransformed[j].y() / m_scenario.resolution);
+				QPoint point(m_scenario.primitives[i].verticesTransformed[j].x() / m_scenario.resolution + origin.x(),
+					-m_scenario.primitives[i].verticesTransformed[j].y() / m_scenario.resolution + origin.y());
 				polygon << point;
 			}
-			QPainter painter(&sceneImg);
-			painter.setPen(QPen(Qt::black, 1));
-			painter.setBrush(Qt::black);
 			painter.drawPolygon(polygon);
+			if (i == currentPrimitiveIndex)
+			{
+				painter.setPen(QPen(Qt::red, 1));
+				painter.setBrush(Qt::red);
+				for (int j = 0; j < polygon.size(); j++)
+				{
+					painter.drawEllipse(polygon[j], 1, 1);
+				}
+				painter.setPen(QPen(Qt::green, 1));
+				painter.setBrush(Qt::green);
+				for (int j = 0; j < m_scenario.primitives[i].anchorTransformed.size(); j++)
+				{
+					QPoint point(m_scenario.primitives[i].anchorTransformed[j].x() / m_scenario.resolution + origin.x(),
+						-m_scenario.primitives[i].anchorTransformed[j].y() / m_scenario.resolution + origin.y());
+					painter.drawEllipse(point, 1, 1);
+				}
+			}
 		}
 		else if (m_scenario.primitives[i].type == "Circle")
 		{
-			QPainter painter(&sceneImg);
-			painter.setPen(QPen(Qt::black, 1));
-			painter.setBrush(Qt::black);
-			painter.drawEllipse(QPointF(m_scenario.primitives[i].center.x() / m_scenario.resolution, m_scenario.primitives[i].center.y() / m_scenario.resolution), m_scenario.primitives[i].vertices[0].x() / m_scenario.resolution, m_scenario.primitives[i].vertices[0].y() / m_scenario.resolution);
+			if (i == currentPrimitiveIndex)
+			{
+				painter.setPen(QPen(Qt::gray, 1));
+				painter.setBrush(Qt::gray);
+			}
+			double radius = sqrt(pow(m_scenario.primitives[i].vertices[0].x(), 2) + pow(m_scenario.primitives[i].vertices[0].y(), 2));
+			painter.drawEllipse(
+				QPointF(
+					m_scenario.primitives[i].center.x() / m_scenario.resolution + origin.x(),
+					-m_scenario.primitives[i].center.y() / m_scenario.resolution + origin.y()
+				), 
+				radius / m_scenario.resolution, 
+				radius / m_scenario.resolution
+			);
+			if (i == currentPrimitiveIndex)
+			{
+				painter.setPen(QPen(Qt::red, 1));
+				painter.setBrush(Qt::red);
+				painter.drawEllipse(
+					QPointF(
+						m_scenario.primitives[i].center.x() / m_scenario.resolution + origin.x(),
+						-m_scenario.primitives[i].center.y() / m_scenario.resolution + origin.y()
+					),
+					1,
+					1
+				);
+				painter.setPen(QPen(Qt::green, 1));
+				painter.setBrush(Qt::green);
+				for (int j = 0; j < m_scenario.primitives[i].anchorTransformed.size(); j++)
+				{
+					QPoint point(m_scenario.primitives[i].anchorTransformed[j].x() / m_scenario.resolution + origin.x(),
+						-m_scenario.primitives[i].anchorTransformed[j].y() / m_scenario.resolution + origin.y());
+					painter.drawEllipse(point, 1, 1);
+				}
+			}	
 		}
 	}
-
+	painter.end();
 	pixmap = QPixmap::fromImage(sceneImg);
 	
 	changed = false;
+}
+
+void ScenarioEditor::forceUpdate()
+{
+	changed = true;
+	update();
 }
 
 void ScenarioEditor::getPixMap(QPixmap& pix)
 {
 	pix = pixmap;
 }
+
+void ScenarioEditor::selectPrimitive(int index)
+{
+	currentPrimitiveIndex = index;
+}
+
+void ScenarioEditor::selectPrimitive(QPointF position)
+{
+	currentPrimitiveIndex = -1;
+	for (int i = 0; i < m_scenario.primitives.size(); i++)
+	{
+		if (m_scenario.primitives[i].contains(position))
+		{
+			currentPrimitiveIndex = i;
+			break;
+		}
+	}
+
+}
+
+void ScenarioEditor::moveCurrentPrimitive(QPointF position)
+{
+	if (currentPrimitiveIndex != -1)
+	{
+		m_scenario.primitives[currentPrimitiveIndex].center = position;
+		m_scenario.primitives[currentPrimitiveIndex].updateGeometry();
+		changed = true;
+	}
+
+}
+
+void ScenarioEditor::rotateCurrentPrimitive(qreal angle)
+{
+	if (currentPrimitiveIndex != -1)
+	{
+		m_scenario.primitives[currentPrimitiveIndex].rotation = angle;
+		m_scenario.primitives[currentPrimitiveIndex].updateGeometry();
+		changed = true;
+	}
+}
+
+void ScenarioEditor::onAddPrimitive(Primitive primitive)
+{
+	m_scenario.addPrimitive(primitive);
+	changed = true;
+}
+

@@ -98,6 +98,7 @@
     <QtMoc Include="UVScenarioEditor.h" />
     <ClCompile Include="Common\MultipleInputDialog.cpp" />
     <ClCompile Include="PrimitiveEditor\PrimitiveEditor.cpp" />
+    <ClCompile Include="ScenarioEditor\MultipleSpinBoxDialog.cpp" />
     <ClCompile Include="ScenarioEditor\ScenarioEditor.cpp" />
     <ClCompile Include="UVScenarioEditor.cpp" />
     <ClCompile Include="main.cpp" />
@@ -109,6 +110,7 @@
     <QtMoc Include="Common\MultipleInputDialog.h" />
     <ClInclude Include="Common\Type.h" />
     <QtMoc Include="PrimitiveEditor\PrimitiveEditor.h" />
+    <QtMoc Include="ScenarioEditor\MultipleSpinBoxDialog.h" />
     <ClInclude Include="Settings.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

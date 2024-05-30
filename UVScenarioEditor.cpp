@@ -5,6 +5,13 @@ UVScenarioEditor::UVScenarioEditor(QWidget *parent)
 {
     ui.setupUi(this);
 
+	setMouseTracking(true);
+	this->centralWidget()->setMouseTracking(true);
+	ui.labelView->setMouseTracking(true);
+
+	labelMousePos = new QLabel(this);
+	ui.statusBar->addWidget(labelMousePos);
+
 	appDir = QApplication::applicationDirPath();
 	qDebug() << "App dir: " << appDir;
 
@@ -55,6 +62,10 @@ UVScenarioEditor::UVScenarioEditor(QWidget *parent)
 	/// create ScenarioEditor and PrimitiveEditor
 	m_scenarioEditor = new ScenarioEditor(this);
 	m_primitiveEditor = new PrimitiveEditor(this);
+
+	/// connect signals and slots
+	connect(m_primitiveEditor, SIGNAL(placePrimitive(Primitive)), m_scenarioEditor, SLOT(onAddPrimitive(Primitive)));
+	
 
 	timerId = startTimer(10);
 }
@@ -181,11 +192,85 @@ void UVScenarioEditor::timerEvent(QTimerEvent* event)
 		if (!showPix.isNull())
 		{
 			showPix = showPix.scaled(ui.labelView->size(), Qt::KeepAspectRatio);
+			scale = showPix.width() / m_scenarioEditor->m_scenario.width;
 			ui.labelView->setPixmap(showPix);
 		}
 	}
 	else
 	{
 		QWidget::timerEvent(event);
+	}
+}
+
+void UVScenarioEditor::mousePressEvent(QMouseEvent* event)
+{
+	QPoint pos = event->pos();
+	QPoint centralPos = this->centralWidget()->pos();
+	QPoint viewPos = ui.labelView->pos();
+	QPoint scenePos = pos - centralPos - viewPos;
+	QPointF origin(-m_scenarioEditor->m_scenario.width / 2, -m_scenarioEditor->m_scenario.height / 2);
+	QPointF position(scenePos.x() / scale + origin.x(), -scenePos.y() / scale - origin.y());
+
+	m_scenarioEditor->selectPrimitive(position);
+	m_scenarioEditor->forceUpdate();
+	qDebug() << "Current Primitive: " << m_scenarioEditor->currentPrimitiveIndex;
+}
+
+void UVScenarioEditor::mouseReleaseEvent(QMouseEvent* event)
+{
+	m_scenarioEditor->currentPrimitiveIndex = -1;
+	m_scenarioEditor->forceUpdate();
+	qDebug() << "Release";
+}
+
+void UVScenarioEditor::mouseMoveEvent(QMouseEvent* event)
+{
+	/// show the current mouse position in the status bar
+	QPoint pos = event->pos();
+	QPoint centralPos = this->centralWidget()->pos();
+	QPoint viewPos = ui.labelView->pos();
+	QPoint scenePos = pos - centralPos - viewPos;
+	QPointF origin(-m_scenarioEditor->m_scenario.width / 2, -m_scenarioEditor->m_scenario.height / 2);
+	QPointF position(scenePos.x() / scale + origin.x(), -scenePos.y() / scale - origin.y());
+	// QString str = QString("Mouse Pos: (%1, %2)").arg(scenePos.x()).arg(scenePos.y());
+	// if (m_scenarioEditor->m_scenario.resolution)
+	// double resolution = m_scenarioEditor->m_scenario.resolution / scale;
+	QString str = QString("Mouse Pos: (%1, %2)").arg(position.x()).arg(position.y());
+	labelMousePos->setText(str);
+
+	if (m_scenarioEditor->currentPrimitiveIndex != -1)
+	{
+		m_scenarioEditor->moveCurrentPrimitive(position);
+	}
+}
+
+void UVScenarioEditor::wheelEvent(QWheelEvent* event)
+{
+	if (m_scenarioEditor->currentPrimitiveIndex != -1)
+	{
+		int delta = event->angleDelta().y();
+		qDebug() << "Wheel Delta: " << delta;
+		qreal angle = m_scenarioEditor->m_scenario.primitives[m_scenarioEditor->currentPrimitiveIndex].rotation;
+		angle += delta / 12;
+		m_scenarioEditor->rotateCurrentPrimitive(angle);
+	}
+}
+
+void UVScenarioEditor::mouseDoubleClickEvent(QMouseEvent* event)
+{
+	qDebug() << "Mouse Double Clicked";
+}
+
+void UVScenarioEditor::keyPressEvent(QKeyEvent* event)
+{
+	/// delete the current primitive
+	if (event->key() == Qt::Key_Delete)
+	{
+		if (m_scenarioEditor->currentPrimitiveIndex != -1)
+		{
+			m_scenarioEditor->m_scenario.removePrimitive(m_scenarioEditor->currentPrimitiveIndex);
+			m_scenarioEditor->currentPrimitiveIndex = -1;
+			m_scenarioEditor->forceUpdate();
+		}
 	}
 }

@@ -47,6 +47,51 @@ public:
 			}
 		}
 	}
+	bool contains(QPointF point)
+	{
+		if (type == "Polygon")
+		{
+			auto checkLineIntersection = [](QPointF p1, QPointF p2, QPointF p3, QPointF p4) -> bool
+				{
+					// 快速排斥实验
+					if (std::max(p1.x(), p2.x()) < std::min(p3.x(), p4.x()) ||
+						std::max(p3.x(), p4.x()) < std::min(p1.x(), p2.x()) ||
+						std::max(p1.y(), p2.y()) < std::min(p3.y(), p4.y()) ||
+						std::max(p3.y(), p4.y()) < std::min(p1.y(), p2.y()))
+					{
+						return false;
+					}
+					// 跨立实验
+					double u = (p3.x() - p1.x()) * (p2.y() - p1.y()) - (p2.x() - p1.x()) * (p3.y() - p1.y());
+					double v = (p4.x() - p1.x()) * (p2.y() - p1.y()) - (p2.x() - p1.x()) * (p4.y() - p1.y());
+					double w = (p1.x() - p3.x()) * (p4.y() - p3.y()) - (p4.x() - p3.x()) * (p1.y() - p3.y());
+					double z = (p2.x() - p3.x()) * (p4.y() - p3.y()) - (p4.x() - p3.x()) * (p2.y() - p3.y());
+					return u * v <= 0 && w * z <= 0;
+				};
+			int crossCount = 0;
+			for (int i = 0; i < verticesTransformed.size(); i++)
+			{
+				QPointF p1 = verticesTransformed[i];
+				QPointF p2 = verticesTransformed[(i + 1) % verticesTransformed.size()];
+				if (checkLineIntersection(point, QPointF(1e6, point.y()), p1, p2))
+				{
+					crossCount++;
+				}
+			}
+			return crossCount % 2 == 1;
+		}
+		else if (type == "Circle")
+		{
+			double dx = point.x() - center.x();
+			double dy = point.y() - center.y();
+			double distance = sqrt(dx * dx + dy * dy);
+			return distance <= sqrt(pow(vertices[0].x(), 2) + pow(vertices[0].y(), 2));
+		}
+		else
+		{
+			return false;
+		}
+	}
 public:
 	/// common properties
 	QString	name;
