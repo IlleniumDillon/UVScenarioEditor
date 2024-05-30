@@ -251,7 +251,7 @@ void UVScenarioEditor::wheelEvent(QWheelEvent* event)
 		int delta = event->angleDelta().y();
 		qDebug() << "Wheel Delta: " << delta;
 		qreal angle = m_scenarioEditor->m_scenario.primitives[m_scenarioEditor->currentPrimitiveIndex].rotation;
-		angle += delta / 12;
+		angle += delta / 12.0 / 360.0 * 2.0 * 3.1415926;
 		m_scenarioEditor->rotateCurrentPrimitive(angle);
 	}
 }
